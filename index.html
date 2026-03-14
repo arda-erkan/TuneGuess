@@ -7,160 +7,839 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <style>
+:root{--bg:#09090C;--bg2:#111118;--bg3:#18181F;--surface:#1E1E28;--surface2:#252532;--border:#2C2C3E;--border2:#38384F;--text:#EDEAE0;--text-dim:#7A7A90;--text-mute:#3A3A52;--accent:#F5A623;--accent2:#FF6B35;--green:#4ADE80;--yellow:#FBBF24;--red:#F87171;--font-h:'Syne',sans-serif;--font-b:'DM Mono',monospace;--r:8px;--r-lg:14px;--shadow:0 8px 32px rgba(0,0,0,0.5)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+button{cursor:pointer}
+.noise{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-repeat:repeat;background-size:150px}
+header{position:sticky;top:0;z-index:100;background:rgba(9,9,12,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.header-inner{max-width:600px;margin:0 auto;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:.5rem}
+.logo-icon{font-size:1.6rem;color:var(--accent);line-height:1;filter:drop-shadow(0 0 8px rgba(245,166,35,.4))}
+.logo-text{font-family:var(--font-h);font-size:1.2rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;background:linear-gradient(130deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.settings-btn{background:none;border:1px solid var(--border);color:var(--text-dim);width:36px;height:36px;border-radius:var(--r);font-size:1rem;display:flex;align-items:center;justify-content:center;transition:border-color .2s,color .2s}
+.settings-btn:hover{border-color:var(--accent);color:var(--accent)}
+.tabs-container{max-width:600px;margin:0 auto;padding:1.25rem 1.5rem 0}
+.tabs{display:flex;gap:3px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:3px}
+.tab{flex:1;padding:.55rem 1rem;border:none;background:none;color:var(--text-dim);font-family:var(--font-b);font-size:.78rem;font-weight:500;border-radius:5px;letter-spacing:.04em;transition:background .2s,color .2s}
+.tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 6px rgba(0,0,0,.4)}
+.tab:hover:not(.active){color:var(--text)}
+.custom-playlist-bar{max-width:600px;margin:.75rem auto 0;padding:0 1.5rem;display:flex;gap:.5rem}
+.custom-playlist-bar input{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--font-b);font-size:.8rem;padding:.6rem .875rem;border-radius:var(--r);outline:none;transition:border-color .2s}
+.custom-playlist-bar input:focus{border-color:var(--accent)}
+.custom-playlist-bar input::placeholder{color:var(--text-mute)}
+.btn-load{background:var(--accent);border:none;color:#000;font-family:var(--font-h);font-size:.8rem;font-weight:700;padding:.6rem 1.25rem;border-radius:var(--r);letter-spacing:.05em;transition:opacity .2s}
+.btn-load:hover{opacity:.85}
+.game-container{max-width:600px;margin:0 auto;padding:1.5rem;display:flex;flex-direction:column;gap:1rem}
+.song-card{display:flex;align-items:center;gap:1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1rem 1.25rem;transition:border-color .5s,background .5s;min-height:90px}
+.song-card.won{border-color:var(--green);background:color-mix(in srgb,var(--green) 8%,var(--surface))}
+.song-card.lost{border-color:var(--red);background:color-mix(in srgb,var(--red) 5%,var(--surface))}
+.song-card-art{width:64px;height:64px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--bg3);border:1px solid var(--border)}
+.art-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.art-placeholder.small .art-icon{font-size:1.2rem}
+.art-icon{font-size:1.5rem;opacity:.3;font-family:var(--font-h)}
+.song-card-art img{width:100%;height:100%;object-fit:cover;filter:blur(24px) brightness(.6);transition:filter .7s ease}
+.song-card-art img.unblur{filter:blur(0) brightness(1)}
+.song-card-info{flex:1;min-width:0}
+.song-title-hidden{font-family:var(--font-b);font-size:1rem;font-weight:500;color:var(--text-mute);letter-spacing:.25em;margin-bottom:.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:all .5s}
+.song-artist-hidden{font-size:.78rem;color:var(--text-mute);letter-spacing:.15em;transition:all .5s}
+.song-card.won .song-title-hidden,.song-card.lost .song-title-hidden{font-family:var(--font-h);font-size:1.1rem;font-weight:700;color:var(--text);letter-spacing:.02em}
+.song-card.won .song-artist-hidden,.song-card.lost .song-artist-hidden{color:var(--text-dim);letter-spacing:.06em}
+.audio-player{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.1rem 1.25rem;position:relative}
+#ytPlayerWrap{position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
+.clip-info{display:flex;align-items:center;gap:.4rem;font-size:.68rem;color:var(--text-dim);letter-spacing:.08em;margin-bottom:.9rem}
+.clip-label{color:var(--text-mute);text-transform:uppercase}
+.clip-val{color:var(--accent);font-weight:500;min-width:28px}
+.clip-sep,.clip-max{color:var(--text-mute)}
+.player-controls{display:flex;align-items:center;gap:1rem}
+.play-btn{width:48px;height:48px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s,opacity .2s,box-shadow .2s}
+.play-btn:hover:not(:disabled){transform:scale(1.06);box-shadow:0 0 22px rgba(245,166,35,.38)}
+.play-btn:active:not(:disabled){transform:scale(.93)}
+.play-btn:disabled{opacity:.25;cursor:not-allowed}
+.play-btn svg{width:17px;height:17px;fill:#000;margin-left:2px}
+.play-btn.is-pause svg{margin-left:0}
+.progress-track{flex:1;height:10px;background:var(--bg3);border-radius:100px;overflow:hidden;position:relative}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:100px;width:0%;transition:width .4s ease}
+.progress-segments{position:absolute;inset:0;pointer-events:none}
+.progress-seg{height:100%;width:1px;background:rgba(255,255,255,.15);border-radius:1px;position:absolute}
+.guess-slots{display:flex;flex-direction:column;gap:.45rem}
+.guess-slot{height:46px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;padding:0 .875rem;font-size:.82rem;font-family:var(--font-b);color:var(--text-dim);transition:border-color .3s,background .3s,color .3s}
+.guess-slot.active-next{border-style:dashed;border-color:var(--border2)}
+.guess-slot.skipped{color:var(--text-mute);font-style:italic}
+.guess-slot.correct{background:color-mix(in srgb,var(--green) 13%,var(--bg2));border-color:var(--green);color:var(--green)}
+.guess-slot.artist{background:color-mix(in srgb,var(--yellow) 13%,var(--bg2));border-color:var(--yellow);color:var(--yellow)}
+.guess-slot.wrong{background:color-mix(in srgb,var(--red) 10%,var(--bg2));border-color:var(--red);color:var(--red)}
+.slot-num{font-size:.62rem;color:var(--text-mute);min-width:14px;margin-right:.6rem;flex-shrink:0}
+.slot-label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot-icon{margin-left:.5rem;font-size:.85rem;flex-shrink:0}
+@keyframes slotIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.slot-animate{animation:slotIn .28s ease forwards}
+.input-area{display:flex;flex-direction:column;gap:.6rem}
+.input-wrapper{position:relative}
+.guess-input{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--font-b);font-size:.875rem;padding:.875rem 1rem;border-radius:var(--r);outline:none;transition:border-color .2s}
+.guess-input:focus{border-color:var(--accent)}
+.guess-input::placeholder{color:var(--text-mute)}
+.guess-input:disabled{opacity:.4}
+.autocomplete-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);z-index:50;max-height:220px;overflow-y:auto;display:none;box-shadow:var(--shadow)}
+.autocomplete-dropdown.open{display:block}
+.ac-item{padding:.65rem 1rem;cursor:pointer;transition:background .12s;border-bottom:1px solid var(--border)}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item.hi{background:var(--surface)}
+.ac-title{font-size:.82rem;color:var(--text);font-weight:500}
+.ac-artist{font-size:.7rem;color:var(--text-dim);margin-top:1px}
+.input-actions{display:flex;gap:.5rem}
+.btn-skip{flex:1;padding:.75rem;background:none;border:1px solid var(--border);color:var(--text-dim);font-family:var(--font-b);font-size:.8rem;border-radius:var(--r);letter-spacing:.04em;transition:border-color .2s,color .2s}
+.btn-skip:hover{border-color:var(--border2);color:var(--text)}
+.btn-skip:disabled{opacity:.3;cursor:not-allowed}
+.btn-submit{flex:2;padding:.75rem;background:var(--accent);border:none;color:#000;font-family:var(--font-h);font-size:.875rem;font-weight:700;border-radius:var(--r);letter-spacing:.05em;transition:opacity .2s,transform .12s}
+.btn-submit:hover:not(:disabled){opacity:.88}
+.btn-submit:active:not(:disabled){transform:scale(.97)}
+.btn-submit:disabled{opacity:.25;cursor:not-allowed}
+.btn-new-game{padding:.875rem;background:none;border:1px solid var(--accent);color:var(--accent);font-family:var(--font-h);font-size:.875rem;font-weight:700;border-radius:var(--r);letter-spacing:.06em;text-transform:uppercase;transition:background .2s,color .2s}
+.btn-new-game:hover{background:var(--accent);color:#000}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
+@keyframes modalIn{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:440px;box-shadow:0 32px 96px rgba(0,0,0,.7);animation:modalIn .24s ease forwards}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.5rem;border-bottom:1px solid var(--border)}
+.modal-header h2{font-family:var(--font-h);font-size:.95rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.modal-close{background:none;border:none;color:var(--text-dim);width:28px;height:28px;border-radius:50%;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s}
+.modal-close:hover{background:var(--surface);color:var(--text)}
+.modal-body{padding:1.4rem 1.5rem;display:flex;flex-direction:column;gap:1.4rem}
+.settings-section h3{font-family:var(--font-h);font-size:.82rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:.5rem;margin-bottom:.45rem}
+.badge{font-size:.58rem;background:var(--accent);color:#000;padding:.15rem .45rem;border-radius:100px;font-family:var(--font-b);letter-spacing:.04em;font-weight:500}
+.settings-note{font-size:.73rem;color:var(--text-dim);line-height:1.55;margin-bottom:.7rem}
+.modal-body label{display:block;font-size:.67rem;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.35rem;margin-top:.6rem}
+.modal-body input[type="text"],.modal-body input[type="password"]{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--font-b);font-size:.8rem;padding:.6rem .875rem;border-radius:var(--r);outline:none;transition:border-color .2s}
+.modal-body input:focus{border-color:var(--accent)}
+.modal-footer{padding:0 1.5rem 1.5rem}
+.btn-save{width:100%;padding:.75rem;background:var(--accent);border:none;color:#000;font-family:var(--font-h);font-size:.875rem;font-weight:700;border-radius:var(--r);letter-spacing:.05em;transition:opacity .2s}
+.btn-save:hover{opacity:.88}
+.modal-end{display:flex;flex-direction:column;align-items:center;padding:2rem 1.5rem;gap:1rem;text-align:center}
+.end-icon{font-size:3rem;line-height:1}
+.end-title-text{font-family:var(--font-h);font-size:1.4rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.end-song-card{display:flex;align-items:center;gap:.875rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.875rem 1.1rem;width:100%;text-align:left}
+.end-art-wrap{width:52px;height:52px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--bg3)}
+.end-art-wrap img{width:100%;height:100%;object-fit:cover}
+.end-song-name{font-family:var(--font-h);font-size:.95rem;font-weight:700}
+.end-artist-name{font-size:.78rem;color:var(--text-dim);margin-top:.2rem}
+.end-actions{display:flex;gap:.6rem;width:100%}
+.btn-play-full{flex:1;padding:.7rem;background:none;border:1px solid var(--border);color:var(--text);font-family:var(--font-b);font-size:.8rem;border-radius:var(--r);transition:border-color .2s}
+.btn-play-full:hover{border-color:var(--border2)}
+.btn-end-new{flex:1;padding:.7rem;background:var(--accent);border:none;color:#000;font-family:var(--font-h);font-size:.875rem;font-weight:700;border-radius:var(--r);letter-spacing:.04em;transition:opacity .2s}
+.btn-end-new:hover{opacity:.88}
+.loading-overlay{position:fixed;inset:0;background:rgba(9,9,12,.82);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-spinner{width:30px;height:30px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite}
+.loading-text{font-size:.78rem;color:var(--text-dim);letter-spacing:.06em}
+@keyframes toastIn{from{transform:translateX(-50%) translateY(12px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:var(--font-b);font-size:.78rem;padding:.55rem 1.2rem;border-radius:100px;z-index:400;white-space:nowrap;display:none;box-shadow:var(--shadow)}
+.toast.show{display:block;animation:toastIn .25s ease}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:4px}
+@media(max-width:480px){.header-inner{padding:.85rem 1rem}.tabs-container{padding:1rem 1rem 0}.game-container{padding:1rem;gap:.875rem}.custom-playlist-bar{padding:0 1rem}}
+  </style>
 </head>
 <body>
-  <div class="noise"></div>
 
-  <!-- Header -->
-  <header>
-    <div class="header-inner">
-      <div class="logo">
-        <span class="logo-icon">♪</span>
-        <span class="logo-text">TuneGuess</span>
-      </div>
-      <button class="settings-btn" id="settingsBtn" title="Settings">⚙</button>
+<div class="noise"></div>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-icon">&#9834;</span>
+      <span class="logo-text">TuneGuess</span>
     </div>
-  </header>
+    <button class="settings-btn" id="settingsBtn" title="Settings">&#9881;</button>
+  </div>
+</header>
 
-  <!-- Mode Tabs -->
-  <div class="tabs-container">
-    <div class="tabs">
-      <button class="tab active" data-mode="builtin">Built-in Playlist</button>
-      <button class="tab" data-mode="custom">Custom Playlist</button>
+<div class="tabs-container">
+  <div class="tabs">
+    <button class="tab active" data-mode="builtin">Built-in Playlist</button>
+    <button class="tab" data-mode="custom">Custom Playlist</button>
+  </div>
+</div>
+
+<div class="custom-playlist-bar" id="customPlaylistBar" style="display:none">
+  <input type="text" id="playlistInput" placeholder="Paste Spotify Playlist URL or ID&#8230;" />
+  <button id="loadPlaylistBtn" class="btn-load">Load</button>
+</div>
+
+<main class="game-container">
+  <div class="song-card" id="songCard">
+    <div class="song-card-art" id="songArt">
+      <div class="art-placeholder"><span class="art-icon">?</span></div>
+    </div>
+    <div class="song-card-info">
+      <div class="song-title-hidden" id="songTitleHidden">? &nbsp; ? &nbsp; ? &nbsp; ? &nbsp; ?</div>
+      <div class="song-artist-hidden" id="songArtistHidden">? &nbsp; ? &nbsp; ?</div>
     </div>
   </div>
 
-  <!-- Custom Playlist Input -->
-  <div class="custom-playlist-bar" id="customPlaylistBar" style="display:none">
-    <input type="text" id="playlistInput" placeholder="Paste Spotify Playlist URL or ID…" />
-    <button id="loadPlaylistBtn" class="btn-load">Load</button>
-  </div>
-
-  <!-- Main Game Area -->
-  <main class="game-container">
-
-    <!-- Song Card -->
-    <div class="song-card" id="songCard">
-      <div class="song-card-art" id="songArt">
-        <div class="art-placeholder"><span class="art-icon">?</span></div>
-      </div>
-      <div class="song-card-info">
-        <div class="song-title-hidden" id="songTitleHidden">? ? ? ? ?</div>
-        <div class="song-artist-hidden" id="songArtistHidden">? ? ?</div>
-      </div>
+  <div class="audio-player">
+    <div id="ytPlayerWrap"><div id="ytPlayer"></div></div>
+    <div class="clip-info">
+      <span class="clip-label">CLIP</span>
+      <span id="clipDurationLabel" class="clip-val">0.1s</span>
+      <span class="clip-sep">/</span>
+      <span class="clip-max">15s</span>
     </div>
-
-    <!-- Audio Player -->
-    <div class="audio-player">
-      <!-- Hidden YouTube player container -->
-      <div id="ytPlayerWrap">
-        <div id="ytPlayer"></div>
-      </div>
-
-      <div class="clip-info">
-        <span class="clip-label">CLIP</span>
-        <span id="clipDurationLabel" class="clip-val">0.1s</span>
-        <span class="clip-sep">/</span>
-        <span class="clip-max">15s</span>
-      </div>
-
-      <div class="player-controls">
-        <button class="play-btn" id="playBtn" disabled>
-          <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
-        </button>
-        <div class="progress-track">
-          <div class="progress-fill" id="progressFill"></div>
-          <div class="progress-segments" id="progressSegments"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Guess Slots -->
-    <div class="guess-slots" id="guessSlots"></div>
-
-    <!-- Input Area -->
-    <div class="input-area" id="inputArea">
-      <div class="input-wrapper">
-        <input
-          type="text"
-          id="guessInput"
-          class="guess-input"
-          placeholder="Search for a song…"
-          autocomplete="off"
-        />
-        <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
-      </div>
-      <div class="input-actions">
-        <button class="btn-skip" id="skipBtn">Skip</button>
-        <button class="btn-submit" id="submitBtn" disabled>Submit</button>
-      </div>
-    </div>
-
-    <!-- Post-game -->
-    <button class="btn-new-game" id="newGameBtn" style="display:none">↺ New Game</button>
-
-  </main>
-
-  <!-- Settings Modal -->
-  <div class="modal-overlay" id="settingsModal" style="display:none">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>Settings</h2>
-        <button class="modal-close" id="closeSettings">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="settings-section">
-          <h3>Spotify API <span class="badge">Custom Playlist</span></h3>
-          <p class="settings-note">
-            Register your app at <a href="https://developer.spotify.com/dashboard" target="_blank">developer.spotify.com/dashboard</a>.
-            No redirect URI needed — we use Client Credentials flow.
-          </p>
-          <label>Client ID</label>
-          <input type="text" id="spotifyClientId" placeholder="Your Spotify Client ID" />
-          <label>Client Secret</label>
-          <input type="password" id="spotifyClientSecret" placeholder="Your Spotify Client Secret" />
-        </div>
-        <div class="settings-section">
-          <h3>YouTube API Key <span class="badge">Custom Playlist</span></h3>
-          <p class="settings-note">
-            Create a free key at <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> — enable <strong>YouTube Data API v3</strong>.
-          </p>
-          <label>API Key</label>
-          <input type="text" id="youtubeApiKey" placeholder="Your YouTube Data API v3 Key" />
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-save" id="saveSettings">Save Settings</button>
+    <div class="player-controls">
+      <button class="play-btn" id="playBtn" disabled>
+        <svg id="playIcon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+      </button>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+        <div class="progress-segments" id="progressSegments"></div>
       </div>
     </div>
   </div>
 
-  <!-- Game End Modal -->
-  <div class="modal-overlay" id="gameEndModal" style="display:none">
-    <div class="modal modal-end">
-      <div class="end-icon" id="gameEndIcon"></div>
-      <h2 id="gameEndTitle" class="end-title-text"></h2>
-      <div class="end-song-card" id="endSongCard">
-        <div class="end-art-wrap" id="endArtWrap">
-          <div class="art-placeholder small"><span class="art-icon">♪</span></div>
-        </div>
-        <div class="end-song-info">
-          <div class="end-song-name" id="endSongName"></div>
-          <div class="end-artist-name" id="endArtistName"></div>
-        </div>
-      </div>
-      <div class="end-actions">
-        <button class="btn-play-full" id="playFullBtn">▶ Play Full</button>
-        <button class="btn-end-new" id="endNewGameBtn">↺ New Game</button>
-      </div>
+  <div class="guess-slots" id="guessSlots"></div>
+
+  <div class="input-area" id="inputArea">
+    <div class="input-wrapper">
+      <input type="text" id="guessInput" class="guess-input" placeholder="Search for a song&#8230;" autocomplete="off" />
+      <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+    </div>
+    <div class="input-actions">
+      <button class="btn-skip" id="skipBtn">Skip</button>
+      <button class="btn-submit" id="submitBtn" disabled>Submit</button>
     </div>
   </div>
 
-  <script src="js/songs.js"></script>
-  <script src="js/spotify.js"></script>
-  <script src="js/youtube.js"></script>
-  <script src="js/app.js"></script>
-  <script src="https://www.youtube.com/iframe_api"></script>
+  <button class="btn-new-game" id="newGameBtn" style="display:none">&#x21BA; New Game</button>
+</main>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Settings</h2>
+      <button class="modal-close" id="closeSettings">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div class="settings-section">
+        <h3>Spotify API <span class="badge">Custom Playlist</span></h3>
+        <p class="settings-note">Register at <a href="https://developer.spotify.com/dashboard" target="_blank">developer.spotify.com/dashboard</a>. Uses Client Credentials &mdash; no user login needed.</p>
+        <label>Client ID</label>
+        <input type="text" id="spotifyClientId" placeholder="Your Spotify Client ID" />
+        <label>Client Secret</label>
+        <input type="password" id="spotifyClientSecret" placeholder="Your Spotify Client Secret" />
+      </div>
+      <div class="settings-section">
+        <h3>YouTube API Key <span class="badge">Custom Playlist</span></h3>
+        <p class="settings-note">Create a free key at <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> &mdash; enable <strong>YouTube Data API v3</strong>.</p>
+        <label>API Key</label>
+        <input type="text" id="youtubeApiKey" placeholder="Your YouTube Data API v3 Key" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-save" id="saveSettings">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- Game End Modal -->
+<div class="modal-overlay" id="gameEndModal" style="display:none">
+  <div class="modal modal-end">
+    <div class="end-icon" id="gameEndIcon"></div>
+    <h2 class="end-title-text" id="gameEndTitle"></h2>
+    <div class="end-song-card">
+      <div class="end-art-wrap" id="endArtWrap">
+        <div class="art-placeholder small"><span class="art-icon">&#9834;</span></div>
+      </div>
+      <div class="end-song-info">
+        <div class="end-song-name" id="endSongName"></div>
+        <div class="end-artist-name" id="endArtistName"></div>
+      </div>
+    </div>
+    <div class="end-actions">
+      <button class="btn-play-full" id="playFullBtn">&#9654; Play Full</button>
+      <button class="btn-end-new" id="endNewGameBtn">&#x21BA; New Game</button>
+    </div>
+  </div>
+</div>
+
+<!--
+  ALL JAVASCRIPT IS INLINE BELOW THE HTML.
+  The DOM is fully built by this point, so event listeners attach immediately.
+  No DOMContentLoaded wrapper needed.
+-->
+<script>
+// =============================================================================
+// BUILT-IN PLAYLIST — edit youtubeId to change songs
+// =============================================================================
+var BUILTIN_SONGS = [
+  { id:1,  title:"Shape of You",           artist:"Ed Sheeran",      youtubeId:"JGwWNGJdvx8" },
+  { id:2,  title:"Blinding Lights",         artist:"The Weeknd",      youtubeId:"4NRXx6U8ABQ" },
+  { id:3,  title:"Rolling in the Deep",     artist:"Adele",           youtubeId:"rYEDA3JcQqw" },
+  { id:4,  title:"Uptown Funk",             artist:"Mark Ronson",     youtubeId:"OPf0YbXqDm0" },
+  { id:5,  title:"Bohemian Rhapsody",       artist:"Queen",           youtubeId:"fJ9rUzIMcZQ" },
+  { id:6,  title:"Smells Like Teen Spirit", artist:"Nirvana",         youtubeId:"hTWKbfoikeg" },
+  { id:7,  title:"Billie Jean",             artist:"Michael Jackson", youtubeId:"Zi_XLOBDo_Y" },
+  { id:8,  title:"Sweet Child O' Mine",     artist:"Guns N' Roses",   youtubeId:"1w7OgIMMRc4" },
+  { id:9,  title:"Levitating",              artist:"Dua Lipa",        youtubeId:"TUVcZfQe-Kc" },
+  { id:10, title:"drivers license",         artist:"Olivia Rodrigo",  youtubeId:"ZmDBbnmKpqQ" },
+  { id:11, title:"bad guy",                 artist:"Billie Eilish",   youtubeId:"DyDfgMOUjCI" },
+  { id:12, title:"Watermelon Sugar",        artist:"Harry Styles",    youtubeId:"E07s5ZYygMg" },
+  { id:13, title:"Sunflower",               artist:"Post Malone",     youtubeId:"ApXoWvfEYVU" },
+  { id:14, title:"God's Plan",              artist:"Drake",           youtubeId:"xpVfcZ0ZcFM" },
+  { id:15, title:"Old Town Road",           artist:"Lil Nas X",       youtubeId:"r7qovpFAGrQ" },
+  { id:16, title:"Rockstar",                artist:"Post Malone",     youtubeId:"UceaB4D0jpo" },
+  { id:17, title:"Stay",                    artist:"The Kid LAROI",   youtubeId:"kTJczUoc26U" },
+  { id:18, title:"Butter",                  artist:"BTS",             youtubeId:"WMweEpGlu_U" },
+  { id:19, title:"good 4 u",                artist:"Olivia Rodrigo",  youtubeId:"gNi_6U5Pm_o" },
+  { id:20, title:"SICKO MODE",              artist:"Travis Scott",    youtubeId:"6ONRf7h3Mdk" },
+  { id:21, title:"Peaches",                 artist:"Justin Bieber",   youtubeId:"peUa7M0-Wlg" },
+  { id:22, title:"Dynamite",                artist:"BTS",             youtubeId:"gdZLi9oWNZg" },
+  { id:23, title:"Happier",                 artist:"Marshmello",      youtubeId:"m7Bc3pLyij0" },
+  { id:24, title:"Believer",                artist:"Imagine Dragons", youtubeId:"7wtfhZwyrcc" },
+  { id:25, title:"Thunder",                 artist:"Imagine Dragons", youtubeId:"fKopy74weus" }
+];
+
+function getSongArt(song) {
+  if (song.albumArt)  return song.albumArt;
+  if (song.youtubeId) return "https://img.youtube.com/vi/"+song.youtubeId+"/mqdefault.jpg";
+  return "";
+}
+
+// =============================================================================
+// YOUTUBE PLAYER WRAPPER
+// =============================================================================
+var _yt = null, _ytReady = false, _ytCbs = [];
+var _clipTimer = null, _progTimer = null;
+var _clipPending = false, _clipDur = 0, _clipOnProg = null, _clipOnEnd = null;
+var _loadPending = null;
+
+// YouTube API calls this when ready
+function onYouTubeIframeAPIReady() {
+  _yt = new YT.Player("ytPlayer", {
+    height:"1", width:"1", videoId:"",
+    playerVars:{ autoplay:0,controls:0,disablekb:1,fs:0,modestbranding:1,rel:0,iv_load_policy:3 },
+    events:{
+      onReady: function() {
+        _ytReady = true;
+        _ytCbs.forEach(function(cb){ cb(); });
+        _ytCbs = [];
+      },
+      onStateChange: function(ev) {
+        if (ev.data === YT.PlayerState.CUED && _loadPending) {
+          var r = _loadPending.resolve; _loadPending = null; r();
+        }
+        if (ev.data === YT.PlayerState.PLAYING && _clipPending) {
+          _clipPending = false;
+          _doClipTimer(_clipDur, _clipOnProg, _clipOnEnd);
+        }
+      },
+      onError: function(ev) {
+        if (_loadPending) { var rej = _loadPending.reject; _loadPending = null; rej(new Error("YT err "+ev.data)); }
+        _clipPending = false;
+        if (_clipOnEnd) _clipOnEnd();
+      }
+    }
+  });
+}
+
+function _doClipTimer(dur, onP, onE) {
+  var t0 = Date.now(), ms = dur*1000;
+  _progTimer = setInterval(function(){
+    var p = Math.min((Date.now()-t0)/ms, 1);
+    if (onP) onP(p);
+  }, 50);
+  _clipTimer = setTimeout(function(){
+    clearInterval(_progTimer); _progTimer = null; _clipTimer = null;
+    if (_yt) _yt.pauseVideo();
+    if (onP) onP(1);
+    if (onE) onE();
+  }, ms);
+}
+
+function ytWhenReady(cb) { if (_ytReady) cb(); else _ytCbs.push(cb); }
+function ytIsReady()     { return _ytReady; }
+function ytStop()        { clearTimeout(_clipTimer); clearInterval(_progTimer); _clipTimer=null; _progTimer=null; _clipPending=false; if(_yt) _yt.pauseVideo(); }
+
+function ytLoad(videoId) {
+  return new Promise(function(ok, fail) {
+    if (!_yt) { fail(new Error("Player not ready")); return; }
+    ytStop();
+    _loadPending = { resolve:ok, reject:fail };
+    _yt.cueVideoById({ videoId:videoId, startSeconds:0 });
+    setTimeout(function(){ if(_loadPending){ _loadPending=null; ok(); } }, 5000);
+  });
+}
+
+function ytClip(dur, onP, onE) {
+  if (!_yt) return;
+  ytStop();
+  _clipDur=dur; _clipOnProg=onP; _clipOnEnd=onE; _clipPending=true;
+  _yt.seekTo(0,true); _yt.playVideo();
+}
+
+function ytPlayer() { return _yt; }
+
+async function ytSearch(q, key) {
+  var r = await fetch("https://www.googleapis.com/youtube/v3/search?part=snippet&q="+encodeURIComponent(q)+"&type=video&videoCategoryId=10&maxResults=3&key="+encodeURIComponent(key));
+  if (!r.ok) throw new Error("YT search failed");
+  var d = await r.json();
+  if (!d.items||!d.items.length) throw new Error("No YT results");
+  return d.items[0].id.videoId;
+}
+
+// =============================================================================
+// SPOTIFY HELPERS
+// =============================================================================
+async function spotifyToken(cid, csec) {
+  var r = await fetch("https://accounts.spotify.com/api/token",{
+    method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded","Authorization":"Basic "+btoa(cid+":"+csec)},
+    body:"grant_type=client_credentials"
+  });
+  if (!r.ok) { var e=await r.json().catch(function(){return{};}); throw new Error(e.error_description||"Spotify auth failed"); }
+  return (await r.json()).access_token;
+}
+
+async function spotifyPlaylist(token, pid) {
+  var tracks=[], url="https://api.spotify.com/v1/playlists/"+encodeURIComponent(pid)+"/tracks?fields=items(track(id,name,artists,album(images))),next&limit=50";
+  while (url) {
+    var r = await fetch(url,{headers:{"Authorization":"Bearer "+token}});
+    if (!r.ok) throw new Error("Playlist fetch failed");
+    var d = await r.json();
+    (d.items||[]).forEach(function(x){
+      var t=x&&x.track; if(!t||!t.name) return;
+      tracks.push({id:t.id,title:t.name,artist:(t.artists&&t.artists[0]&&t.artists[0].name)||"Unknown",albumArt:(t.album&&t.album.images&&t.album.images[1]&&t.album.images[1].url)||""});
+    });
+    url=d.next||null;
+  }
+  return tracks;
+}
+
+async function spotifySearch(token, q) {
+  var r = await fetch("https://api.spotify.com/v1/search?q="+encodeURIComponent(q)+"&type=track&limit=8",{headers:{"Authorization":"Bearer "+token}});
+  if (!r.ok) return [];
+  var d = await r.json();
+  return (d.tracks&&d.tracks.items||[]).map(function(t){
+    return {id:t.id,title:t.name,artist:(t.artists&&t.artists[0]&&t.artists[0].name)||"Unknown",albumArt:(t.album&&t.album.images&&t.album.images[2]&&t.album.images[2].url)||""};
+  });
+}
+
+function parsePlaylistId(s) {
+  s=s.trim();
+  var m=s.match(/playlist\/([A-Za-z0-9]+)/);
+  if(m) return m[1];
+  if(/^[A-Za-z0-9]+$/.test(s)) return s;
+  return null;
+}
+
+// =============================================================================
+// GAME STATE
+// =============================================================================
+var CLIPS = [0.1,1,2,4,8,15];
+
+var S = {
+  mode:"builtin", songs:[], song:null,
+  guesses:[], gi:0, status:"idle",
+  picked:null, spToken:null, spExp:0,
+  vidReady:false, playing:false
+};
+
+// =============================================================================
+// SETTINGS
+// =============================================================================
+function cfg() {
+  return {
+    cid:  localStorage.getItem("tg_cid")||"",
+    csec: localStorage.getItem("tg_csec")||"",
+    ytk:  localStorage.getItem("tg_ytk")||""
+  };
+}
+function saveCfg(o) {
+  localStorage.setItem("tg_cid",  o.cid);
+  localStorage.setItem("tg_csec", o.csec);
+  localStorage.setItem("tg_ytk",  o.ytk);
+}
+
+// =============================================================================
+// TINY HELPERS
+// =============================================================================
+function h(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function show(id){ document.getElementById(id).style.display="flex"; }
+function hide(id){ document.getElementById(id).style.display="none"; }
+function byId(id){ return document.getElementById(id); }
+
+var _load=null;
+function loading(msg) {
+  if(_load) _load.remove();
+  _load=document.createElement("div"); _load.className="loading-overlay";
+  _load.innerHTML='<div class="loading-spinner"></div><div class="loading-text">'+h(msg)+'</div>';
+  document.body.appendChild(_load);
+}
+function doneLoading(){ if(_load){_load.remove();_load=null;} }
+
+var _tEl=null,_tTmr=null;
+function toast(msg){
+  if(!_tEl){_tEl=document.createElement("div");_tEl.className="toast";document.body.appendChild(_tEl);}
+  _tEl.textContent=msg; _tEl.classList.add("show");
+  clearTimeout(_tTmr);
+  _tTmr=setTimeout(function(){_tEl.classList.remove("show");},2800);
+}
+
+// =============================================================================
+// GAME LOGIC
+// =============================================================================
+function resetGame() {
+  ytStop();
+  S.status="idle"; S.song=null; S.guesses=[]; S.gi=0;
+  S.vidReady=false; S.playing=false; S.picked=null;
+  slots(); resetCard(); playBtnState(false);
+  byId("playBtn").disabled=true;
+  byId("clipDurationLabel").textContent="0.1s";
+  byId("progressFill").style.width="0%";
+  byId("inputArea").style.display="flex";
+  byId("newGameBtn").style.display="none";
+  byId("guessInput").value="";
+  byId("guessInput").disabled=false;
+  byId("submitBtn").disabled=true;
+  byId("skipBtn").disabled=false;
+  closeDrop();
+}
+
+function newGame() {
+  if(!S.songs.length){ toast("No songs loaded"); return; }
+  resetGame();
+  S.song = S.songs[Math.floor(Math.random()*S.songs.length)];
+  S.status = "playing";
+  byId("playBtn").disabled=false;
+  clipLabel();
+  toast("\u25b6 Press play to hear a clip!");
+}
+
+async function loadVideo(song) {
+  var vid = song.youtubeId;
+  if (!vid) {
+    var c = cfg();
+    if (!c.ytk) throw new Error("YouTube API key not set in Settings");
+    vid = await ytSearch(song.title+" "+song.artist+" official audio", c.ytk);
+    song.youtubeId = vid;
+  }
+  return ytLoad(vid);
+}
+
+// ── PLAY ──────────────────────────────────────────────────────────
+async function onPlay() {
+  if (S.playing || S.status!=="playing") return;
+
+  if (!S.vidReady) {
+    byId("playBtn").disabled=true;
+    loading("Loading audio\u2026");
+    try {
+      await new Promise(function(ok){
+        if(ytIsReady()){ok();return;}
+        ytWhenReady(ok);
+        setTimeout(ok,7000);
+      });
+      await loadVideo(S.song);
+      S.vidReady=true;
+    } catch(e) {
+      doneLoading();
+      toast("Could not load audio \u2014 try a new game");
+      byId("playBtn").disabled=false;
+      byId("newGameBtn").style.display="block";
+      S.status="idle";
+      return;
+    }
+    doneLoading();
+    byId("playBtn").disabled=false;
+  }
+
+  S.playing=true; playBtnState(true);
+  var dur=CLIPS[S.gi], max=CLIPS[CLIPS.length-1];
+
+  ytClip(dur,
+    function(p){
+      var f=byId("progressFill");
+      f.style.transition="none";
+      f.style.width=(dur/max*100*p)+"%";
+    },
+    function(){
+      S.playing=false; playBtnState(false);
+      var f=byId("progressFill");
+      f.style.transition="width .25s ease";
+      f.style.width=(dur/max*100)+"%";
+    }
+  );
+}
+
+function playBtnState(on) {
+  var btn=byId("playBtn"), ico=byId("playIcon");
+  btn.classList.toggle("is-pause",on);
+  ico.innerHTML=on
+    ?'<rect x="5" y="3" width="4" height="18"/><rect x="15" y="3" width="4" height="18"/>'
+    :'<polygon points="5,3 19,12 5,21"/>';
+}
+
+function clipLabel() {
+  var d=CLIPS[Math.min(S.gi,CLIPS.length-1)];
+  byId("clipDurationLabel").textContent=d+"s";
+}
+
+function buildSegs() {
+  var c=byId("progressSegments"), max=CLIPS[CLIPS.length-1];
+  c.innerHTML="";
+  CLIPS.slice(1).forEach(function(d){
+    var s=document.createElement("div");
+    s.className="progress-seg";
+    s.style.left=(d/max*100)+"%";
+    c.appendChild(s);
+  });
+}
+
+// ── SKIP / SUBMIT ─────────────────────────────────────────────────
+function onSkip() {
+  if(S.status!=="playing") return;
+  ytStop(); S.playing=false; playBtnState(false);
+  doGuess({type:"skip",song:null,result:"skipped"});
+}
+
+function onSubmit() {
+  if(S.status!=="playing"||!S.picked) return;
+  ytStop(); S.playing=false; playBtnState(false);
+  doGuess({type:"guess",song:S.picked,result:eval_guess(S.picked)});
+}
+
+function eval_guess(g) {
+  var norm=function(s){ return s.toLowerCase().replace(/\(feat[^)]*\)/gi,"").replace(/\(ft[^)]*\)/gi,"").replace(/[^a-z0-9]/g,"").trim(); };
+  var tm=norm(g.title)===norm(S.song.title);
+  var am=norm(g.artist)===norm(S.song.artist)||norm(S.song.artist).includes(norm(g.artist))||norm(g.artist).includes(norm(S.song.artist));
+  if(tm) return "correct";
+  if(am) return "artist";
+  return "wrong";
+}
+
+function doGuess(guess) {
+  S.guesses.push(guess);
+  fillSlot(S.gi, guess);
+  if(guess.result==="correct"){ S.status="won"; gameOver(true); return; }
+  S.gi++;
+  if(S.gi>=CLIPS.length){ S.status="lost"; gameOver(false); return; }
+  S.picked=null;
+  byId("guessInput").value="";
+  byId("submitBtn").disabled=true;
+  closeDrop(); clipLabel();
+  var nd=CLIPS[S.gi], mx=CLIPS[CLIPS.length-1];
+  var f=byId("progressFill");
+  f.style.transition="width .5s ease";
+  f.style.width=(nd/mx*100)+"%";
+}
+
+// ── END ────────────────────────────────────────────────────────────
+function gameOver(won) {
+  revealCard(won);
+  byId("inputArea").style.display="none";
+  byId("newGameBtn").style.display="block";
+  var f=byId("progressFill");
+  f.style.transition="width .6s ease"; f.style.width="100%";
+  byId("clipDurationLabel").textContent="15s";
+  setTimeout(function(){ endModal(won); },700);
+}
+
+function revealCard(won) {
+  var card=byId("songCard");
+  card.classList.add(won?"won":"lost");
+  var art=getSongArt(S.song);
+  if(art){
+    var el=byId("songArt");
+    el.innerHTML='<img src="'+h(art)+'" alt="art" />';
+    setTimeout(function(){ var i=el.querySelector("img"); if(i) i.classList.add("unblur"); },60);
+  }
+  byId("songTitleHidden").textContent  = S.song.title;
+  byId("songArtistHidden").textContent = S.song.artist;
+}
+
+function resetCard() {
+  byId("songCard").classList.remove("won","lost");
+  byId("songArt").innerHTML='<div class="art-placeholder"><span class="art-icon">?</span></div>';
+  byId("songTitleHidden").textContent  = "? ? ? ? ?";
+  byId("songArtistHidden").textContent = "? ? ?";
+}
+
+function endModal(won) {
+  byId("gameEndIcon").textContent  = won?"🎉":"😔";
+  byId("gameEndTitle").textContent = won?("Got it in "+S.guesses.length+(S.guesses.length===1?" try!":" tries!")):"Better luck next time!";
+  byId("endSongName").textContent   = S.song.title;
+  byId("endArtistName").textContent = S.song.artist;
+  var art=getSongArt(S.song);
+  byId("endArtWrap").innerHTML=art?'<img src="'+h(art)+'" alt="art" />':'<div class="art-placeholder small"><span class="art-icon">&#9834;</span></div>';
+  show("gameEndModal");
+}
+
+function onPlayFull() {
+  hide("gameEndModal");
+  var p=ytPlayer(); if(!p) return;
+  p.seekTo(0,true); p.playVideo(); playBtnState(true);
+  byId("clipDurationLabel").textContent="\u25b6";
+}
+
+// ── SLOTS ──────────────────────────────────────────────────────────
+function slots() {
+  var c=byId("guessSlots"); c.innerHTML="";
+  for(var i=0;i<CLIPS.length;i++){
+    var d=document.createElement("div");
+    d.className="guess-slot"+(i===S.gi&&S.status==="playing"?" active-next":"");
+    d.id="slot-"+i;
+    d.innerHTML='<span class="slot-num">'+(i+1)+'</span><span class="slot-label"></span>';
+    c.appendChild(d);
+  }
+}
+
+function fillSlot(idx,guess) {
+  var sl=byId("slot-"+idx); if(!sl) return;
+  sl.classList.remove("active-next"); sl.classList.add("slot-animate");
+  var lb=sl.querySelector(".slot-label");
+  var ic=document.createElement("span"); ic.className="slot-icon";
+  if(guess.result==="skipped") { sl.classList.add("skipped"); lb.textContent="Skipped"; ic.textContent="\u21b7"; }
+  else if(guess.result==="correct") { sl.classList.add("correct"); lb.textContent=guess.song.title+" \u2013 "+guess.song.artist; ic.textContent="\u2713"; }
+  else if(guess.result==="artist")  { sl.classList.add("artist");  lb.textContent=guess.song.title+" \u2013 "+guess.song.artist; ic.textContent="~"; }
+  else                               { sl.classList.add("wrong");   lb.textContent=guess.song.title+" \u2013 "+guess.song.artist; ic.textContent="\u2717"; }
+  sl.appendChild(ic);
+  var nx=byId("slot-"+(idx+1));
+  if(nx&&S.status==="playing") nx.classList.add("active-next");
+}
+
+// ── AUTOCOMPLETE ───────────────────────────────────────────────────
+var _acList=[], _acHi=-1, _acTmr=null;
+
+function onInput(ev) {
+  var q=ev.target.value.trim();
+  S.picked=null; byId("submitBtn").disabled=true; _acHi=-1;
+  if(!q){closeDrop();return;}
+  clearTimeout(_acTmr);
+  _acTmr=setTimeout(async function(){
+    var res=[];
+    if(S.mode==="custom"&&S.spToken){
+      try{res=await spotifySearch(S.spToken,q);}catch(e){res=localSearch(q);}
+    } else { res=localSearch(q); }
+    _acList=res; renderDrop(res);
+  },180);
+}
+
+function localSearch(q) {
+  q=q.toLowerCase();
+  return S.songs.filter(function(s){
+    return s.title.toLowerCase().includes(q)||s.artist.toLowerCase().includes(q)||(s.title+" "+s.artist).toLowerCase().includes(q);
+  }).slice(0,8);
+}
+
+function renderDrop(items) {
+  var dd=byId("autocompleteDropdown");
+  if(!items.length){dd.classList.remove("open");return;}
+  dd.innerHTML=items.map(function(x,i){
+    return '<div class="ac-item" data-i="'+i+'"><div class="ac-title">'+h(x.title)+'</div><div class="ac-artist">'+h(x.artist)+'</div></div>';
+  }).join("");
+  dd.querySelectorAll(".ac-item").forEach(function(el){
+    el.addEventListener("click",function(){pickItem(+el.dataset.i);});
+  });
+  dd.classList.add("open");
+}
+
+function onKeydown(ev) {
+  var items=document.querySelectorAll(".ac-item");
+  if(ev.key==="ArrowDown"){ev.preventDefault();_acHi=Math.min(_acHi+1,items.length-1);hilite(items);}
+  else if(ev.key==="ArrowUp"){ev.preventDefault();_acHi=Math.max(_acHi-1,0);hilite(items);}
+  else if(ev.key==="Enter"){ev.preventDefault();if(_acHi>=0)pickItem(_acHi);else if(S.picked)onSubmit();}
+  else if(ev.key==="Escape"){closeDrop();}
+}
+
+function hilite(items){
+  items.forEach(function(el,i){el.classList.toggle("hi",i===_acHi);});
+  if(_acHi>=0&&items[_acHi]) items[_acHi].scrollIntoView({block:"nearest"});
+}
+
+function pickItem(i){
+  var s=_acList[i]; if(!s) return;
+  S.picked=s;
+  byId("guessInput").value=s.title+" \u2013 "+s.artist;
+  byId("submitBtn").disabled=false;
+  closeDrop();
+}
+
+function closeDrop(){ byId("autocompleteDropdown").classList.remove("open"); _acHi=-1; }
+
+// ── MODE ───────────────────────────────────────────────────────────
+function switchMode(mode) {
+  if(mode===S.mode) return;
+  S.mode=mode;
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("active",t.dataset.mode===mode);});
+  byId("customPlaylistBar").style.display=mode==="custom"?"flex":"none";
+  if(mode==="builtin"){S.songs=BUILTIN_SONGS.slice();newGame();}
+  else{S.songs=[];resetGame();toast("Paste a Spotify playlist URL and press Load");}
+}
+
+// ── SETTINGS ───────────────────────────────────────────────────────
+function fillSettings(){
+  var c=cfg();
+  byId("spotifyClientId").value=c.cid;
+  byId("spotifyClientSecret").value=c.csec;
+  byId("youtubeApiKey").value=c.ytk;
+}
+function saveSettings(){
+  saveCfg({cid:byId("spotifyClientId").value.trim(),csec:byId("spotifyClientSecret").value.trim(),ytk:byId("youtubeApiKey").value.trim()});
+  hide("settingsModal"); toast("Settings saved \u2713");
+}
+
+// ── CUSTOM PLAYLIST ────────────────────────────────────────────────
+async function loadPlaylist(){
+  var inp=byId("playlistInput").value.trim(); if(!inp) return;
+  var c=cfg();
+  if(!c.cid||!c.csec){toast("Add Spotify credentials in Settings first");show("settingsModal");return;}
+  var pid=parsePlaylistId(inp); if(!pid){toast("Invalid Spotify playlist URL");return;}
+  loading("Fetching playlist\u2026");
+  try {
+    if(!S.spToken||Date.now()>S.spExp){
+      S.spToken=await spotifyToken(c.cid,c.csec);
+      S.spExp=Date.now()+3500000;
+    }
+    var trk=await spotifyPlaylist(S.spToken,pid);
+    if(!trk.length){doneLoading();toast("No playable tracks found");return;}
+    S.songs=trk; doneLoading(); toast("\u2713 Loaded "+trk.length+" songs"); newGame();
+  } catch(e){doneLoading();toast("Error: "+e.message);}
+}
+
+// =============================================================================
+// ATTACH ALL EVENT LISTENERS
+// (DOM is 100% ready since this script is after all HTML)
+// =============================================================================
+document.querySelectorAll(".tab").forEach(function(t){
+  t.addEventListener("click",function(){ switchMode(t.dataset.mode); });
+});
+byId("playBtn").addEventListener("click", onPlay);
+byId("skipBtn").addEventListener("click", onSkip);
+byId("submitBtn").addEventListener("click", onSubmit);
+byId("newGameBtn").addEventListener("click", newGame);
+byId("endNewGameBtn").addEventListener("click",function(){ hide("gameEndModal"); newGame(); });
+byId("settingsBtn").addEventListener("click",function(){ show("settingsModal"); });
+byId("closeSettings").addEventListener("click",function(){ hide("settingsModal"); });
+byId("saveSettings").addEventListener("click", saveSettings);
+byId("loadPlaylistBtn").addEventListener("click", loadPlaylist);
+byId("playlistInput").addEventListener("keydown",function(ev){ if(ev.key==="Enter") loadPlaylist(); });
+byId("guessInput").addEventListener("input", onInput);
+byId("guessInput").addEventListener("keydown", onKeydown);
+byId("playFullBtn").addEventListener("click", onPlayFull);
+document.addEventListener("click",function(ev){ if(!ev.target.closest(".input-wrapper")) closeDrop(); });
+
+// =============================================================================
+// BOOT — runs immediately, no DOMContentLoaded race condition possible
+// =============================================================================
+fillSettings();
+slots();
+buildSegs();
+S.songs = BUILTIN_SONGS.slice();
+newGame();
+</script>
+
+<!-- YouTube IFrame API — loaded last; calls onYouTubeIframeAPIReady() when ready -->
+<script src="https://www.youtube.com/iframe_api"></script>
 </body>
 </html>
