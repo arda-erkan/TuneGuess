@@ -11,24 +11,36 @@ Usage:
 import http.server
 import socketserver
 import webbrowser
+import threading
 import os
+import mimetypes
 
 PORT = 8080
 
+# ── Ensure .js and .css are served with the correct MIME types ────────────────
+# On Windows the registry may be missing these, causing browsers to refuse
+# to execute scripts served as text/plain.
+mimetypes.add_type("application/javascript", ".js")
+mimetypes.add_type("text/css",               ".css")
+mimetypes.add_type("text/html",              ".html")
+
 class Handler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
-        # Suppress default logging noise; uncomment next line to re-enable:
-        # print(f"  {args[0]} {args[1]}")
+        # Uncomment the line below to see request logs:
+        # print(f"  [{args[1]}] {args[0]}")
         pass
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-print(f"\n  ♪ TuneGuess server running at http://localhost:{PORT}")
-print(f"  Press Ctrl+C to stop.\n")
-
-webbrowser.open(f"http://localhost:{PORT}")
-
+# ── Create and bind the server FIRST, then open the browser ──────────────────
+socketserver.TCPServer.allow_reuse_address = True
 with socketserver.TCPServer(("", PORT), Handler) as httpd:
+    print(f"\n  ♪ TuneGuess is running at http://localhost:{PORT}")
+    print(f"  Press Ctrl+C to stop.\n")
+
+    # Open browser after server is bound and listening
+    threading.Timer(0.3, lambda: webbrowser.open(f"http://localhost:{PORT}")).start()
+
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
