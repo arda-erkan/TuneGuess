@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TuneGuess</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="noise"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">♪</span>
+        <span class="logo-text">TuneGuess</span>
+      </div>
+      <button class="settings-btn" id="settingsBtn" title="Settings">⚙</button>
+    </div>
+  </header>
+
+  <!-- Mode Tabs -->
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab active" data-mode="builtin">Built-in Playlist</button>
+      <button class="tab" data-mode="custom">Custom Playlist</button>
+    </div>
+  </div>
+
+  <!-- Custom Playlist Input -->
+  <div class="custom-playlist-bar" id="customPlaylistBar" style="display:none">
+    <input type="text" id="playlistInput" placeholder="Paste Spotify Playlist URL or ID…" />
+    <button id="loadPlaylistBtn" class="btn-load">Load</button>
+  </div>
+
+  <!-- Main Game Area -->
+  <main class="game-container">
+
+    <!-- Song Card -->
+    <div class="song-card" id="songCard">
+      <div class="song-card-art" id="songArt">
+        <div class="art-placeholder"><span class="art-icon">?</span></div>
+      </div>
+      <div class="song-card-info">
+        <div class="song-title-hidden" id="songTitleHidden">? ? ? ? ?</div>
+        <div class="song-artist-hidden" id="songArtistHidden">? ? ?</div>
+      </div>
+    </div>
+
+    <!-- Audio Player -->
+    <div class="audio-player">
+      <!-- Hidden YouTube player container -->
+      <div id="ytPlayerWrap">
+        <div id="ytPlayer"></div>
+      </div>
+
+      <div class="clip-info">
+        <span class="clip-label">CLIP</span>
+        <span id="clipDurationLabel" class="clip-val">0.1s</span>
+        <span class="clip-sep">/</span>
+        <span class="clip-max">15s</span>
+      </div>
+
+      <div class="player-controls">
+        <button class="play-btn" id="playBtn" disabled>
+          <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+        </button>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+          <div class="progress-segments" id="progressSegments"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guess Slots -->
+    <div class="guess-slots" id="guessSlots"></div>
+
+    <!-- Input Area -->
+    <div class="input-area" id="inputArea">
+      <div class="input-wrapper">
+        <input
+          type="text"
+          id="guessInput"
+          class="guess-input"
+          placeholder="Search for a song…"
+          autocomplete="off"
+        />
+        <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+      </div>
+      <div class="input-actions">
+        <button class="btn-skip" id="skipBtn">Skip</button>
+        <button class="btn-submit" id="submitBtn" disabled>Submit</button>
+      </div>
+    </div>
+
+    <!-- Post-game -->
+    <button class="btn-new-game" id="newGameBtn" style="display:none">↺ New Game</button>
+
+  </main>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button class="modal-close" id="closeSettings">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="settings-section">
+          <h3>Spotify API <span class="badge">Custom Playlist</span></h3>
+          <p class="settings-note">
+            Register your app at <a href="https://developer.spotify.com/dashboard" target="_blank">developer.spotify.com/dashboard</a>.
+            No redirect URI needed — we use Client Credentials flow.
+          </p>
+          <label>Client ID</label>
+          <input type="text" id="spotifyClientId" placeholder="Your Spotify Client ID" />
+          <label>Client Secret</label>
+          <input type="password" id="spotifyClientSecret" placeholder="Your Spotify Client Secret" />
+        </div>
+        <div class="settings-section">
+          <h3>YouTube API Key <span class="badge">Custom Playlist</span></h3>
+          <p class="settings-note">
+            Create a free key at <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> — enable <strong>YouTube Data API v3</strong>.
+          </p>
+          <label>API Key</label>
+          <input type="text" id="youtubeApiKey" placeholder="Your YouTube Data API v3 Key" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-save" id="saveSettings">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game End Modal -->
+  <div class="modal-overlay" id="gameEndModal" style="display:none">
+    <div class="modal modal-end">
+      <div class="end-icon" id="gameEndIcon"></div>
+      <h2 id="gameEndTitle" class="end-title-text"></h2>
+      <div class="end-song-card" id="endSongCard">
+        <div class="end-art-wrap" id="endArtWrap">
+          <div class="art-placeholder small"><span class="art-icon">♪</span></div>
+        </div>
+        <div class="end-song-info">
+          <div class="end-song-name" id="endSongName"></div>
+          <div class="end-artist-name" id="endArtistName"></div>
+        </div>
+      </div>
+      <div class="end-actions">
+        <button class="btn-play-full" id="playFullBtn">▶ Play Full</button>
+        <button class="btn-end-new" id="endNewGameBtn">↺ New Game</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/songs.js"></script>
+  <script src="js/spotify.js"></script>
+  <script src="js/youtube.js"></script>
+  <script src="js/app.js"></script>
+  <script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>
