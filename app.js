@@ -43,16 +43,19 @@ function saveSettingsToStorage(s) {
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-  initEventListeners();
+  try {
+    initEventListeners();
+  } catch (e) {
+    console.error('[TG] initEventListeners failed:', e);
+  }
   populateSettingsModal();
   renderGuessSlots();
   buildProgressSegments();
 
-  // Start built-in game once YouTube player is ready
-  ytOnReady(() => {
-    state.songs = [...BUILTIN_SONGS];
-    startNewGame();
-  });
+  // Start the game immediately — don't block on YouTube being ready.
+  // The YouTube player is loaded lazily the first time the user clicks Play.
+  state.songs = [...BUILTIN_SONGS];
+  startNewGame();
 });
 
 // ── Event Listeners ───────────────────────────────────────────────────────────
@@ -156,28 +159,15 @@ function startNewGame() {
     return;
   }
   resetToIdle();
-  state.status = 'loading';
 
-  // Pick a random song
+  // Pick a random song and go straight to playing state.
+  // The YouTube video is loaded lazily on the first Play press.
   state.currentSong = state.songs[Math.floor(Math.random() * state.songs.length)];
+  state.status      = 'playing';
 
-  showLoading('Loading song…');
-  loadSongVideo(state.currentSong)
-    .then(() => {
-      hideLoading();
-      state.status    = 'playing';
-      state.videoReady = true;
-      document.getElementById('playBtn').disabled = false;
-      updateClipLabel();
-      showToast('▶ Press play to hear a clip!');
-    })
-    .catch(err => {
-      hideLoading();
-      console.error('[TG] Failed to load video:', err);
-      showToast('Could not load audio — try a new game');
-      document.getElementById('newGameBtn').style.display = 'block';
-      state.status = 'idle';
-    });
+  document.getElementById('playBtn').disabled = false;
+  updateClipLabel();
+  showToast('▶ Press play to hear a clip!');
 }
 
 async function loadSongVideo(song) {
@@ -199,8 +189,35 @@ async function loadSongVideo(song) {
 
 // ── Play Button ───────────────────────────────────────────────────────────────
 
-function handlePlay() {
-  if (state.isPlaying || !state.videoReady || state.status !== 'playing') return;
+async function handlePlay() {
+  if (state.isPlaying || state.status !== 'playing') return;
+
+  // Lazy-load: if the video hasn't been loaded yet, do it now on first press.
+  if (!state.videoReady) {
+    document.getElementById('playBtn').disabled = true;
+    showLoading('Loading audio…');
+    try {
+      // Wait for the YouTube player to be ready first
+      await new Promise((resolve) => {
+        if (ytIsReady()) { resolve(); return; }
+        ytOnReady(resolve);
+        // Fallback if YouTube never fires
+        setTimeout(resolve, 6000);
+      });
+      await loadSongVideo(state.currentSong);
+      state.videoReady = true;
+    } catch (err) {
+      hideLoading();
+      console.error('[TG] Video load failed:', err);
+      showToast('Could not load audio — try a new game');
+      document.getElementById('playBtn').disabled = false;
+      document.getElementById('newGameBtn').style.display = 'block';
+      state.status = 'idle';
+      return;
+    }
+    hideLoading();
+    document.getElementById('playBtn').disabled = false;
+  }
 
   state.isPlaying = true;
   setPlayBtn(true);
@@ -211,7 +228,6 @@ function handlePlay() {
   ytPlayClip(
     duration,
     (progress) => {
-      // Animate progress bar from 0 to revealed level
       const target  = duration / maxDur * 100;
       const current = target * progress;
       const fill    = document.getElementById('progressFill');
@@ -221,7 +237,6 @@ function handlePlay() {
     () => {
       state.isPlaying = false;
       setPlayBtn(false);
-      // Hold bar at the revealed position
       const fill = document.getElementById('progressFill');
       fill.style.transition = 'width 0.25s ease';
       fill.style.width = (duration / maxDur * 100) + '%';
